@@ -1,125 +1,121 @@
-from tkinter import *
-import time
-import numpy
-import random
-
-
-class Car:
-    def getDirection(self, topX):
-        if topX < 250:
-            return "right"
-        if topX > 250:
-            return "left"
-
-    def __init__(self, canvas, colour, topX, topY, bottomX, bottomY, turnDirection):
-        self.canvas = canvas
-        self.direction = Car.getDirection(self, topX)
-        self.turnDirection = turnDirection
-        self.location = self.canvas.create_rectangle(topX, topY, bottomX, bottomY, fill=colour)
-
-    def turn(self, distanceY, x):
-        topXOld, topYOld, bottomXOld, bottomYOld = self.canvas.coords(self.location)
-        self.canvas.coords(self.location, topXOld + 5, topYOld - 10, bottomXOld - 5, bottomYOld + 10)
-        self.canvas.update()
-        self.canvas.move(self.location, distanceY, x)
-        self.canvas.update()
-
-    def move(self, distanceX, distanceY):
-        topXOld, topYOld, bottomXOld, bottomYOld = self.canvas.coords(self.location)
-        averageX = [topXOld, bottomXOld]
-        centre_x = numpy.mean(averageX)
-        averageY = [topYOld, bottomYOld]
-        centre_y = numpy.mean(averageY)
-        x = 0
-        name = self.location
-
-        if (self.direction == "left"):
-            x = distanceX * -1
-        if (self.direction == "right"):
-            x = distanceX
-        if (self.turnDirection == "left"):
-            bla = ""
-        if (self.direction == "right" and self.turnDirection == "right"):
-            if (centre_x < 215):
-                self.canvas.move(self.location, x, distanceY)
-            if (centre_x == 215 and centre_y == 135):
-                Car.turn(self, distanceY, x)
-            if (centre_y > 135):
-                self.canvas.move(self.location, distanceY, x)
-        if (self.direction == "left" and self.turnDirection == "right"):
-            if (centre_x > 235):
-                self.canvas.move(self.location, x, distanceY)
-            if (centre_x == 235 and centre_y == 115):
-                # Turn
-                Car.turn(self, distanceY, x)
-            if (centre_y < 115):
-                self.canvas.move(self.location, distanceY, x)
-        if (self.direction == "right" or "left") and self.turnDirection == "straight":
-            self.canvas.move(self.location, x, distanceY)
-
-
-class RouteController:
-    def __init__(self, canvas):
-        self.canvas = canvas
-        self.cars = []
-
-    def createCars(self):
-        colours = ["blue", "green", "red", "yellow", "black", "white", "purple", "pink"]
-        turns = ["right", "straight"]
-        top = [[0, 125], [420, 105], [-60, 125], [500, 105], [-130, 125], [-170, 125], [550, 105], [-210, 125],
-               [590, 105], [650, 105]]
-        colour = []
-        turn = []
-        for i in range(10):
-            colour.append(random.choice(colours))
-            turn.append(random.choice(turns))
-
-        car1 = Car(self.canvas, colour[0], top[0][0], top[0][1], top[0][0] + 30, top[0][1] + 20, turn[0])
-        car2 = Car(self.canvas, colour[1], top[1][0], top[1][1], top[1][0] + 30, top[1][1] + 20, turn[1])
-        car3 = Car(self.canvas, colour[2], top[2][0], top[2][1], top[2][0] + 30, top[2][1] + 20, turn[2])
-        car4 = Car(self.canvas, colour[3], top[3][0], top[3][1], top[3][0] + 30, top[3][1] + 20, turn[3])
-        car5 = Car(self.canvas, colour[4], top[4][0], top[4][1], top[4][0] + 30, top[4][1] + 20, turn[4])
-        car6 = Car(self.canvas, colour[5], top[5][0], top[5][1], top[5][0] + 30, top[5][1] + 20, turn[5])
-        car7 = Car(self.canvas, colour[6], top[6][0], top[6][1], top[6][0] + 30, top[6][1] + 20, turn[6])
-        car8 = Car(self.canvas, colour[7], top[7][0], top[7][1], top[7][0] + 30, top[7][1] + 20, turn[7])
-        car9 = Car(self.canvas, colour[8], top[8][0], top[8][1], top[8][0] + 30, top[8][1] + 20, turn[8])
-        car10 = Car(self.canvas, colour[9], top[9][0], top[9][1], top[9][0] + 30, top[9][1] + 20, turn[9])
-        self.cars.append(car1)
-        self.cars.append(car2)
-        self.cars.append(car3)
-        self.cars.append(car4)
-        self.cars.append(car5)
-        self.cars.append(car6)
-        self.cars.append(car7)
-        self.cars.append(car8)
-        self.cars.append(car9)
-        self.cars.append(car10)
-
-    def moveCars(self):
-        for i in range(70):
-            for car in self.cars:
-                car.move(10, 0)
-            self.canvas.update()
-            time.sleep(0.05)
-
 # Create window
+import random
+import time
+from tkinter import Tk
+from turtle import Canvas
+import math
+
+
+class Car():
+    # car properties
+    pos_x = 100  # initial position
+    pos_y = 100
+    heading = 0  # car direction in rad
+    speed = 10  # car speed in pixels / step
+    size = 10  # car size in pixels
+    color = "red"
+
+    def __init__(self):
+        """
+        generate a valid heading and corresponding start position eac time a new car is generated
+        """
+        self.heading = random.choice([0, math.pi / 2, math.pi, math.pi * 1.5])
+        if (self.heading == 0):  # car heading right
+            self.pos_x = 0
+            self.pos_y = height / 2 + roadWidth / 3
+        elif (self.heading == math.pi / 2):  # car heading down
+            self.pos_x = width / 2 - roadWidth / 3
+            self.pos_y = 0
+        elif (self.heading == math.pi):  # car heading left
+            self.pos_x = width
+            self.pos_y = height / 2 - roadWidth / 3
+        elif (self.heading == math.pi * 1.5):  # car heading up
+            self.pos_x = width / 2 + roadWidth / 3
+            self.pos_y = height
+
+        self.color = random.choice(["blue", "green", "red", "yellow", "black", "white", "purple", "pink"])
+
+    def turn(self):
+        directionTurn = random.choice(["left", "right", "none"])
+        if directionTurn == "left":
+            # do something
+            self.heading = self.heading + math.pi / 2
+
+    def move(self):
+        """
+        calculate new car position given speed and heading
+        """
+        self.pos_x = self.pos_x + math.cos(self.heading) * self.speed
+        self.pos_y = self.pos_y + math.sin(self.heading) * self.speed
+
+    def draw(self):
+        # draw the car. Depending on direction, turn the car
+        if (self.heading == 0 or self.heading == math.pi):  # going left or right
+            canvas.create_rectangle(self.pos_x - 2 * self.size, self.pos_y - self.size, self.pos_x + 2 * self.size,
+                                    self.pos_y + self.size, fill=self.color)
+        else:  # going up or down
+            canvas.create_rectangle(self.pos_x - self.size, self.pos_y - 2 * self.size, self.pos_x + self.size,
+                                    self.pos_y + 2 * self.size, fill=self.color)
+
+
+def draw_scene():
+    """Clear the current scene and build it up again"""
+
+    # first entirely clear the canvas
+    canvas.delete("all")
+
+    # draw the green parks
+    canvas.create_rectangle(0, 0, (width - roadWidth) / 2, (height - roadWidth) / 2, fill="green")
+    canvas.create_rectangle(0, (height + roadWidth) / 2, (width - roadWidth) / 2, height, fill="green")
+    canvas.create_rectangle((width + roadWidth) / 2, 0, width, (height - roadWidth) / 2, fill="green")
+    canvas.create_rectangle((width + roadWidth) / 2, (height + roadWidth) / 2, width, height, fill="green")
+
+    # draw the dashed lines on the road
+    canvas.create_line(0, height / 2, width, height / 2, fill="white", dash=(20, 20))
+    canvas.create_line(width / 2, 0, width / 2, height, fill="white", dash=(20, 20))
+
+
+def simulate_cars():
+    """ iterate forever through cars and draw them """
+    while (1 == 1):
+        # draw the park scene on the canvas
+        draw_scene()
+
+        # add a new car every now and then
+        if random.randint(0, 9) > 8:
+            newCar = Car();
+            cars.append(newCar)
+
+        # draw all cars in the scene
+        for car in cars:
+            car.move()
+            car.draw()
+
+            # remove cars that drove out of the scene
+            if (car.pos_x < 0 or car.pos_x > width or car.pos_y < 0 or car.pos_y > height):
+                cars.remove(car)
+
+        canvas.update()
+        time.sleep(0.01)
+
+
 if __name__ == '__main__':
-    print("hello")
+    root = Tk()
 
-root = Tk()
+    # main global variables
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
+    roadWidth = 200
 
-canvas = Canvas(root, width=450, height=250, bg="grey")
-canvas.pack()
-canvas.create_rectangle(0, 0, 200, 100, fill="green")
-canvas.create_rectangle(0, 150, 200, 250, fill="green")
-canvas.create_rectangle(250, 0, 450, 100, fill="green")
-canvas.create_rectangle(250, 150, 450, 250, fill="green")
+    #  canvas is a white piece of paper on which you can draw
+    canvas = Canvas(root, width=width, height=height, bg="black")
+    canvas.pack()
 
-# Move cars
-for i in range(5):
-    routeController = RouteController(canvas)
-    routeController.createCars()
-    routeController.moveCars()
+    # list of cars in the scene
+    cars = []
 
-# GO!!
-root.mainloop()
+    # run the simulation
+    simulate_cars()
+
+    # GO!!
+    root.mainloop()

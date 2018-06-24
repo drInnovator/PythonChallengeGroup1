@@ -117,5 +117,5 @@ if __name__ == '__main__':
     # run the simulation
     simulate_cars()
 
-    # GO!!
+    # must be the last line before exit for TKinter
     root.mainloop()
